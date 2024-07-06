@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
@@ -9,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/wandersondevops/rater-limit/limiter"
 	"github.com/wandersondevops/rater-limit/limiter/storage"
