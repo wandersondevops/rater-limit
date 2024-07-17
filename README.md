@@ -43,8 +43,9 @@ O rate limiter pode ser configurado utilizando variáveis de ambiente. Um arquiv
 
 Para executar os testes, use o seguinte comando no diretório raiz do seu projeto:
 
-- sh
-- go test ./tests -v
+- docker-compose up --build
+- docker-compose exec app sh -c "cd /app && go test ./tests -v"
+
 
 ## Conclusão
 ### Este projeto fornece uma solução de rate limiting robusta e configurável em Go, utilizando Redis para armazenamento de estado. A configuração é simples e pode ser realizada via variáveis de ambiente, e a implementação inclui testes automatizados para garantir o funcionamento correto.
