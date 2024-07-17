@@ -1,6 +1,8 @@
 package tests
 
 import (
+	"context"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,6 +14,8 @@ import (
 	"github.com/wandersondevops/rater-limit/limiter/storage"
 )
 
+var ctx = context.Background()
+
 func setupRouter(rateLimiter *limiter.RateLimiter) *mux.Router {
 	r := mux.NewRouter()
 	r.Use(rateLimiter.Middleware)
@@ -21,10 +25,18 @@ func setupRouter(rateLimiter *limiter.RateLimiter) *mux.Router {
 	return r
 }
 
+func clearRedis(redisClient *redis.Client) {
+	redisClient.FlushAll(ctx)
+}
+
 func TestRateLimiterByIP(t *testing.T) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})
+	defer redisClient.Close()
+
+	clearRedis(redisClient)
+
 	store := storage.NewRedisStorage(redisClient)
 
 	rateLimiter := limiter.NewRateLimiter(store, limiter.Config{
@@ -40,6 +52,7 @@ func TestRateLimiterByIP(t *testing.T) {
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("First request status: %d", w.Code)
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status 200 but got %v", w.Code)
 	}
@@ -47,6 +60,7 @@ func TestRateLimiterByIP(t *testing.T) {
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("Second request status: %d", w.Code)
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status 200 but got %v", w.Code)
 	}
@@ -55,6 +69,7 @@ func TestRateLimiterByIP(t *testing.T) {
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("Third request status: %d", w.Code)
 	if w.Code != http.StatusTooManyRequests {
 		t.Fatalf("expected status 429 but got %v", w.Code)
 	}
@@ -64,6 +79,10 @@ func TestRateLimiterByToken(t *testing.T) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})
+	defer redisClient.Close()
+
+	clearRedis(redisClient)
+
 	store := storage.NewRedisStorage(redisClient)
 
 	rateLimiter := limiter.NewRateLimiter(store, limiter.Config{
@@ -80,6 +99,7 @@ func TestRateLimiterByToken(t *testing.T) {
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("First request with token status: %d", w.Code)
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status 200 but got %v", w.Code)
 	}
@@ -87,6 +107,7 @@ func TestRateLimiterByToken(t *testing.T) {
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("Second request with token status: %d", w.Code)
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status 200 but got %v", w.Code)
 	}
@@ -95,6 +116,7 @@ func TestRateLimiterByToken(t *testing.T) {
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("Third request with token status: %d", w.Code)
 	if w.Code != http.StatusTooManyRequests {
 		t.Fatalf("expected status 429 but got %v", w.Code)
 	}
@@ -104,6 +126,10 @@ func TestRateLimiterBlockTime(t *testing.T) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})
+	defer redisClient.Close()
+
+	clearRedis(redisClient)
+
 	store := storage.NewRedisStorage(redisClient)
 
 	rateLimiter := limiter.NewRateLimiter(store, limiter.Config{
@@ -119,6 +145,7 @@ func TestRateLimiterBlockTime(t *testing.T) {
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("First request status: %d", w.Code)
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status 200 but got %v", w.Code)
 	}
@@ -126,6 +153,7 @@ func TestRateLimiterBlockTime(t *testing.T) {
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("Second request status: %d", w.Code)
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status 200 but got %v", w.Code)
 	}
@@ -134,6 +162,7 @@ func TestRateLimiterBlockTime(t *testing.T) {
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("Third request status: %d", w.Code)
 	if w.Code != http.StatusTooManyRequests {
 		t.Fatalf("expected status 429 but got %v", w.Code)
 	}
@@ -145,6 +174,7 @@ func TestRateLimiterBlockTime(t *testing.T) {
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
+	log.Printf("Fourth request status after block time: %d", w.Code)
 	if w.Code != http.StatusOK {
 		t.Fatalf("expected status 200 but got %v", w.Code)
 	}
