@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.9'
 
 services:
   app:
@@ -7,6 +7,7 @@ services:
       - "8080:8080"
     env_file:
       - .env
+    working_dir: /app
     depends_on:
       - redis
 

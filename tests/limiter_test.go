@@ -5,11 +5,13 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/wandersondevops/rater-limit/limiter"
 	"github.com/wandersondevops/rater-limit/limiter/storage"
 )
@@ -30,8 +32,13 @@ func clearRedis(redisClient *redis.Client) {
 }
 
 func TestRateLimiterByIP(t *testing.T) {
+	err := godotenv.Load("/app/.env") // Ensure the correct path
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
 	redisClient := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: os.Getenv("REDIS_ADDRESS"),
 	})
 	defer redisClient.Close()
 
@@ -76,8 +83,13 @@ func TestRateLimiterByIP(t *testing.T) {
 }
 
 func TestRateLimiterByToken(t *testing.T) {
+	err := godotenv.Load("/app/.env") // Ensure the correct path
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
 	redisClient := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: os.Getenv("REDIS_ADDRESS"),
 	})
 	defer redisClient.Close()
 
@@ -123,8 +135,13 @@ func TestRateLimiterByToken(t *testing.T) {
 }
 
 func TestRateLimiterBlockTime(t *testing.T) {
+	err := godotenv.Load("/app/.env") // Ensure the correct path
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
 	redisClient := redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: os.Getenv("REDIS_ADDRESS"),
 	})
 	defer redisClient.Close()
 
