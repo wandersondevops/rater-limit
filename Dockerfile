@@ -1,5 +1,5 @@
 # Use the official Golang image to create a build artifact.
-FROM golang:1.16-alpine AS build
+FROM golang:1.16 AS build
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
@@ -17,12 +17,15 @@ COPY . .
 RUN go build -o main .
 
 # Start a new stage from scratch
-FROM alpine:latest
+FROM debian:buster-slim
 
 WORKDIR /root/
 
 # Copy the Pre-built binary file from the previous stage
 COPY --from=build /app/main .
+
+# Copy .env file
+COPY .env .
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
